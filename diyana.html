@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Как хорошо ты меня знаешь?</title>
+<style>
+:root{
+  --bg:#1a1625; --card:#26203a; --card2:#2f2847;
+  --ink:#f2eefb; --ink2:#a99fc4;
+  --accent:#b388ff; --accent2:#ffb74d;
+  --ok:#66bb6a; --bad:#ef5350; --line:#3a3255;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:radial-gradient(circle at 20% 0%, #2a2140 0%, #1a1625 60%);
+  background-attachment:fixed;
+  color:var(--ink); line-height:1.65;
+  min-height:100vh; padding:24px 14px 60px;
+}
+.wrap{max-width:640px;margin:0 auto}
+.screen{display:none}
+.screen.active{display:block;animation:fade .4s ease}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+h1{font-size:32px;text-align:center;line-height:1.2;margin-bottom:8px}
+h1 span{color:var(--accent)}
+.sub{text-align:center;color:var(--ink2);font-size:17px;margin-bottom:28px}
+
+.card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:18px;padding:26px 24px;margin-bottom:18px;
+  box-shadow:0 10px 40px rgba(0,0,0,.3);
+}
+
+input[type=text]{
+  width:100%;font-family:inherit;font-size:16px;
+  padding:14px 16px;border-radius:12px;
+  border:1px solid var(--line);background:var(--card2);color:var(--ink);
+  margin-bottom:14px;
+}
+input[type=text]::placeholder{color:#7a6e99}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+
+.btn{
+  display:block;width:100%;font-family:inherit;font-size:17px;font-weight:600;
+  padding:15px;border-radius:12px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),#8c5cf5);
+  color:#fff;transition:.2s;margin-bottom:10px;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(179,136,255,.35)}
+.btn:active{transform:translateY(0)}
+.btn.ghost{
+  background:transparent;border:1px solid var(--line);color:var(--ink2);
+  font-weight:400;font-size:15px;
+}
+.btn.ghost:hover{background:var(--card2);box-shadow:none}
+
+/* прогресс */
+.bar{height:8px;background:var(--card2);border-radius:4px;overflow:hidden;margin-bottom:20px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.4s}
+
+.q-num{color:var(--ink2);font-size:14px;margin-bottom:6px}
+.q-text{font-size:21px;font-weight:600;margin-bottom:20px;line-height:1.4}
+
+.option{
+  display:flex;align-items:center;gap:12px;
+  width:100%;text-align:left;font-family:inherit;font-size:16px;
+  padding:15px 18px;border-radius:12px;cursor:pointer;
+  border:1px solid var(--line);background:var(--card2);color:var(--ink);
+  margin-bottom:10px;transition:.15s;
+}
+.option:hover{border-color:var(--accent);background:#352c52}
+.option .mark{
+  width:24px;height:24px;flex-shrink:0;border-radius:50%;
+  border:2px solid var(--line);display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:bold;
+}
+.option.correct{background:rgba(102,187,106,.15);border-color:var(--ok)}
+.option.correct .mark{background:var(--ok);border-color:var(--ok);color:#fff}
+.option.wrong{background:rgba(239,83,80,.12);border-color:var(--bad)}
+.option.wrong .mark{background:var(--bad);border-color:var(--bad);color:#fff}
+.option:disabled{cursor:default}
+
+.feedback{
+  margin-top:16px;padding:14px 16px;border-radius:12px;
+  font-size:15px;display:none;
+}
+.feedback.show{display:block;animation:fade .3s}
+.feedback.ok{background:rgba(102,187,106,.15);border-left:4px solid var(--ok)}
+.feedback.bad{background:rgba(239,83,80,.12);border-left:4px solid var(--bad)}
+.feedback b{display:block;margin-bottom:4px}
+
+/* результат */
+.big-score{
+  font-size:64px;font-weight:800;text-align:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1;margin:10px 0 4px;
+}
+.score-sub{text-align:center;color:var(--ink2);margin-bottom:24px}
+.rank{
+  text-align:center;font-size:24px;font-weight:700;
+  color:var(--accent2);margin-bottom:8px;
+}
+.rank-desc{text-align:center;color:var(--ink2);font-size:15px;margin-bottom:24px}
+
+.share{
+  background:var(--card2);border-radius:12px;padding:16px;
+  text-align:center;font-size:14px;color:var(--ink2);
+  border:1px dashed var(--line);margin-bottom:18px;
+}
+.share b{color:var(--accent2)}
+
+table{width:100%;border-collapse:collapse;font-size:15px;margin-bottom:8px}
+td{padding:10px 4px;border-bottom:1px solid var(--line);color:var(--ink2)}
+td:last-child{text-align:right;color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== СТАРТ ===== -->
+  <section class="screen active" id="s-start">
+    <h1>Как хорошо ты знаешь <span>Дияну</span>?</h1>
+    <p class="sub">10 вопросов · 100 баллов · проверь себя</p>
+    <div class="card">
+      <p style="margin-bottom:18px;color:var(--ink2);font-size:16px">
+        Охаешечки датебаешечки!
+        Отвечай честно, семпай — в конце получишь звание и узнаешь свой результат.
+      </p>
+      <input type="text" id="player" placeholder="Твоё имя" maxlength="20">
+      <button class="btn" id="start">Начать тест →</button>
+    </div>
+  </section>
+
+  <!-- ===== ИГРА ===== -->
+  <section class="screen" id="s-game">
+    <div class="bar"><i id="bar"></i></div>
+    <div class="card">
+      <div class="q-num" id="qnum"></div>
+      <div class="q-text" id="qtext"></div>
+      <div id="options"></div>
+      <div class="feedback" id="fb"></div>
+      <button class="btn" id="next" style="display:none;margin-top:18px">Дальше →</button>
+    </div>
+  </section>
+
+  <!-- ===== РЕЗУЛЬТАТ ===== -->
+  <section class="screen" id="s-final">
+    <div class="card">
+      <div class="big-score" id="score"></div>
+      <div class="score-sub" id="score-sub"></div>
+      <div class="rank" id="rank"></div>
+      <div class="rank-desc" id="rank-desc"></div>
+      <div class="share" id="share"></div>
+      <table id="review"></table>
+      <button class="btn ghost" onclick="location.reload()">Пройти заново</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   ЗДЕСЬ ВАШИ ВОПРОСЫ.
+   options[0] — правильный ответ (его я перемешаю автоматически).
+   fact — то, что увидит игрок после ответа.
+   ========================================================= */
+const QUESTIONS = [
+  {
+    q: 'Какая моя любимая погода?',
+    options: ['Снежная', 'Солнечная', 'Дождливая', 'Туманная'],
+    fact: 'Снежная - потому что твоя мать шлюха.'
+  },
+  {
+    q: 'Какие мои любимые игры в роблоксе?',
+    options: ['Мардер мистери 2', 'Блейдбол', 'Дорс', 'Аборт ми'],
+    fact: 'ММ2 - потому что твоя мать шлюха'
+  },
+  {
+    q: 'Какое моё любимое блюдо?',
+    options: ['Хамбургер', 'Суши', 'Спущенка', 'Пицца'],
+    fact: 'Хамбургер - потому что твоя мать шлюха.'
+  },
+  {
+    q: 'Где я буду через 5 лет?',
+    options: ['Сторчусь в общепите', 'Выйду замуж', 'Буду логистом', 'Буду сидеть у мамочки на шее'],
+    fact: 'Потому что твоя мать шлюха.'
+  },
+  {
+    q: 'Кого я люблю?',
+    options: ['Аутиств', '129 Саша', 'Курьеров', 'Гостей'],
+    fact: 'Потому что твоя мать шлюха'
+  },
+  {
+    q: 'Моё любимое занятие в выходные?',
+    options: ['Работать', 'Гулять с друзьями', 'Смотреть сериалы', 'Спать'],
+    fact: 'Потому что твоя мать шлюха'
+  },
+  {
+    q: 'Куда я мечтаю поехать?',
+    options: ['На Украину', 'Башкортостан', 'В Исландию', 'На бургеры(США)'],
+    fact: 'Однажды обязательно поеду 🌏'
+  }
+];
+
+/* ===================== СОСТОЯНИЕ ===================== */
+const state = { player:'друг', qi:0, score:0, answers:[] };
+const $ = s => document.querySelector(s);
+const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+const TOTAL = QUESTIONS.length * 10;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===================== СТАРТ ===================== */
+$('#start').onclick = () => {
+  const v = $('#player').value.trim();
+  state.player = v || 'друг';
+  state.qi = 0; state.score = 0; state.answers = [];
+  show('s-game');
+  drawQuestion();
+};
+$('#player').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#start').click(); });
+
+/* ===================== ВОПРОС ===================== */
+function drawQuestion(){
+  const q = QUESTIONS[state.qi];
+  const correct = q.options[0];
+  const shuffled = shuffle([...q.options]);
+
+  $('#bar').style.width = (state.qi / QUESTIONS.length * 100) + '%';
+  $('#qnum').textContent = `Вопрос ${state.qi+1} из ${QUESTIONS.length}`;
+  $('#qtext').textContent = q.q;
+  $('#fb').className = 'feedback';
+  $('#next').style.display = 'none';
+
+  const box = $('#options');
+  box.innerHTML = '';
+  let locked = false;
+
+  shuffled.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'option';
+    b.innerHTML = `<span class="mark"></span><span>${opt}</span>`;
+    b.onclick = () => {
+      if(locked) return;
+      locked = true;
+      const isRight = opt === correct;
+      if(isRight){ state.score += 10; b.classList.add('correct'); b.querySelector('.mark').textContent='✓'; }
+      else {
+        b.classList.add('wrong'); b.querySelector('.mark').textContent='✕';
+        // показать правильный
+        Array.from(box.children).forEach(c=>{
+          if(c.textContent.includes(correct) && c!==b){
+            c.classList.add('correct'); c.querySelector('.mark').textContent='✓';
+          }
+        });
+      }
+      Array.from(box.children).forEach(c=>c.disabled = true);
+
+      const fb = $('#fb');
+      fb.className = 'feedback show ' + (isRight?'ok':'bad');
+      fb.innerHTML = `<b>${isRight?'Верно! +10':'Не угадал(а)'}</b>${q.fact}`;
+
+      state.answers.push({ q: q.q, right: isRight, correct: correct });
+
+      const nb = $('#next');
+      nb.style.display = 'block';
+      nb.textContent = state.qi === QUESTIONS.length-1 ? 'Узнать результат →' : 'Дальше →';
+    };
+    box.appendChild(b);
+  });
+}
+
+$('#next').onclick = () => {
+  state.qi++;
+  if(state.qi >= QUESTIONS.length){ showFinal(); }
+  else { drawQuestion(); }
+};
+
+/* ===================== ФИНАЛ ===================== */
+function showFinal(){
+  const s = state.score;
+  const pct = s / TOTAL;
+  let rank, desc, emoji;
+
+  if(pct === 1)        { rank='Сын шлюхи';        desc='Ты знаешь меня идеально. Даже лучше, чем я сам(а).'; emoji='👑'; }
+  else if(pct >= 0.8)  { rank='Семпайчик';       desc='Ты правда меня знаешь. Респект!'; emoji='🔥'; }
+  else if(pct >= 0.6)  { rank='Здоровяк';   desc='Неплохо, но есть куда расти.'; emoji='😊'; }
+  else if(pct >= 0.4)  { rank='Пидарас';           desc='Кажется, мы мало общаемся. Давай исправим!'; emoji='🤔'; }
+  else                 { rank='На СВО молодого'; desc='Ты вообще знаешь, кто я такая? 😄'; emoji='👀'; }
+
+  $('#score').textContent = s + ' / ' + TOTAL;
+  $('#score-sub').textContent = `${state.player}, ты набрал(а) ${s} из ${TOTAL} баллов`;
+  $('#rank').textContent = emoji + ' ' + rank;
+  $('#rank-desc').textContent = desc;
+
+  $('#share').innerHTML = `Мой результат: <b>${s}/${TOTAL}</b> · звание «${rank}»<br><span style="font-size:13px">Скинь скрин друзьям — пусть попробуют побить!</span>`;
+
+  $('#review').innerHTML = state.answers.map(a =>
+    `<tr><td>${a.right?'✅':'❌'} ${a.q}</td><td>${a.correct}</td></tr>`
+  ).join('');
+
+  show('s-final');
+}
+</script>
+</body>
+</html>
